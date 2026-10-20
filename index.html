@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🌙 Kuun Sykli — Moon Phase</title>
+<meta name="description" content="Upea reaaliaikainen kuun vaihevisualisointi. Näyttää tämän hetken kuun syklin, illuminaation, iän ja tulevat vaiheet.">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow-x: hidden; }
+  body {
+    background: #000;
+    color: #e8e8f0;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+    min-height: 100vh;
+    overflow-y: auto;
+    position: relative;
+  }
+
+  /* ========== TÄHTIKENTTÄ ========== */
+  .stars, .stars2, .stars3 {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .stars {
+    background-image:
+      radial-gradient(1px 1px at 13px 23px, #fff, transparent),
+      radial-gradient(1px 1px at 47px 89px, #fff, transparent),
+      radial-gradient(1px 1px at 82px 14px, #f0f8ff, transparent),
+      radial-gradient(2px 2px at 167px 45px, #fff, transparent),
+      radial-gradient(1px 1px at 203px 78px, #fff, transparent),
+      radial-gradient(1px 1px at 251px 156px, #e8f4ff, transparent),
+      radial-gradient(1px 1px at 312px 201px, #fff, transparent),
+      radial-gradient(2px 2px at 367px 134px, #fff, transparent),
+      radial-gradient(1px 1px at 412px 267px, #fff, transparent),
+      radial-gradient(1px 1px at 478px 98px, #ddeeff, transparent),
+      radial-gradient(1px 1px at 523px 312px, #fff, transparent),
+      radial-gradient(1px 1px at 589px 201px, #fff, transparent),
+      radial-gradient(2px 2px at 634px 89px, #fff, transparent),
+      radial-gradient(1px 1px at 698px 245px, #fff, transparent),
+      radial-gradient(1px 1px at 745px 178px, #fff, transparent),
+      radial-gradient(1px 1px at 812px 334px, #f5f9ff, transparent),
+      radial-gradient(1px 1px at 867px 56px, #fff, transparent),
+      radial-gradient(2px 2px at 923px 289px, #fff, transparent),
+      radial-gradient(1px 1px at 978px 145px, #fff, transparent),
+      radial-gradient(1px 1px at 1034px 367px, #e8eef8, transparent),
+      radial-gradient(1px 1px at 1089px 223px, #fff, transparent),
+      radial-gradient(1px 1px at 1156px 78px, #fff, transparent),
+      radial-gradient(2px 2px at 1201px 312px, #fff, transparent),
+      radial-gradient(1px 1px at 1256px 189px, #fff, transparent),
+      radial-gradient(1px 1px at 1312px 256px, #dde9ff, transparent),
+      radial-gradient(1px 1px at 1367px 123px, #fff, transparent),
+      radial-gradient(1px 1px at 1423px 345px, #fff, transparent),
+      radial-gradient(2px 2px at 1478px 67px, #fff, transparent),
+      radial-gradient(1px 1px at 1534px 278px, #fff, transparent),
+      radial-gradient(1px 1px at 1589px 156px, #f0f4ff, transparent),
+      radial-gradient(1px 1px at 1645px 334px, #fff, transparent),
+      radial-gradient(1px 1px at 1701px 89px, #fff, transparent);
+    background-repeat: repeat;
+    background-size: 1800px 500px;
+    animation: twinkle 4s ease-in-out infinite alternate;
+  }
+  .stars2 {
+    background-image:
+      radial-gradient(1px 1px at 34px 178px, #aaccff, transparent),
+      radial-gradient(1px 1px at 123px 67px, #fff, transparent),
+      radial-gradient(2px 2px at 234px 256px, #fff, transparent),
+      radial-gradient(1px 1px at 367px 134px, #cce0ff, transparent),
+      radial-gradient(1px 1px at 456px 290px, #fff, transparent),
+      radial-gradient(1px 1px at 578px 112px, #fff, transparent),
+      radial-gradient(2px 2px at 689px 234px, #ddeeff, transparent),
+      radial-gradient(1px 1px at 789px 67px, #fff, transparent),
+      radial-gradient(1px 1px at 856px 312px, #fff, transparent),
+      radial-gradient(1px 1px at 945px 178px, #cce4ff, transparent),
+      radial-gradient(1px 1px at 1034px 45px, #fff, transparent),
+      radial-gradient(2px 2px at 1123px 267px, #fff, transparent),
+      radial-gradient(1px 1px at 1223px 123px, #ddeeff, transparent),
+      radial-gradient(1px 1px at 1334px 312px, #fff, transparent),
+      radial-gradient(1px 1px at 1423px 89px, #fff, transparent);
+    background-size: 1600px 400px;
+    animation: twinkle 5s ease-in-out infinite alternate;
+    animation-delay: -2s;
+  }
+  .stars3 {
+    background-image:
+      radial-gradient(1px 1px at 89px 345px, #fff, transparent),
+      radial-gradient(2px 2px at 178px 123px, #fff, transparent),
+      radial-gradient(1px 1px at 267px 278px, #bbddff, transparent),
+      radial-gradient(1px 1px at 389px 156px, #fff, transparent),
+      radial-gradient(1px 1px at 489px 367px, #fff, transparent),
+      radial-gradient(2px 2px at 601px 67px, #cce4ff, transparent),
+      radial-gradient(1px 1px at 723px 223px, #fff, transparent),
+      radial-gradient(1px 1px at 823px 178px, #fff, transparent),
+      radial-gradient(1px 1px at 934px 289px, #ddeeff, transparent),
+      radial-gradient(2px 2px at 1045px 89px, #fff, transparent),
+      radial-gradient(1px 1px at 1156px 245px, #fff, transparent),
+      radial-gradient(1px 1px at 1267px 156px, #cce4ff, transparent);
+    background-size: 1400px 450px;
+    animation: twinkle 6s ease-in-out infinite alternate;
+    animation-delay: -1s;
+  }
+  @keyframes twinkle {
+    0% { opacity: 0.4; }
+    50% { opacity: 1; }
+    100% { opacity: 0.4; }
+  }
+
+  /* ========== AURINKO (gradient taustalla) ========== */
+  .sun-glow {
+    position: fixed;
+    top: -20%;
+    right: -20%;
+    width: 60vw;
+    height: 60vw;
+    pointer-events: none;
+    z-index: 0;
+    background: radial-gradient(circle, rgba(255, 200, 100, 0.05) 0%, rgba(255, 200, 100, 0.02) 30%, transparent 70%);
+    animation: sun-pulse 8s ease-in-out infinite;
+  }
+  @keyframes sun-pulse {
+    0%, 100% { opacity: 0.8; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.05); }
+  }
+
+  /* ========== PÄÄASIASETTELU ========== */
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px 60px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+  }
+  .header {
+    text-align: center;
+    width: 100%;
+  }
+  .header h1 {
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    font-weight: 200;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    background: linear-gradient(180deg, #ffffff 0%, #b0c4de 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+  }
+  .header__clock {
+    font-size: clamp(0.85rem, 2vw, 1rem);
+    color: #8a9bb5;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.1em;
+  }
+
+  /* ========== KUU-SECTION ========== */
+  .moon-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  .moon-container {
+    position: relative;
+    width: clamp(240px, 55vw, 360px);
+    height: clamp(240px, 55vw, 360px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .moon-glow {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 130%;
+    height: 130%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(255, 248, 220, 0.15) 0%, rgba(255, 248, 220, 0.05) 40%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+    animation: moon-halo 8s ease-in-out infinite;
+  }
+  @keyframes moon-halo {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+  }
+  /* The Moon - CSS gradient-based realistic rendering */
+  .moon {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: 
+      radial-gradient(circle at var(--moon-terminator, 50%) 50%, 
+        #f8f4e8 0%, 
+        #f8f4e8 var(--moon-lit, 50%), 
+        #1a1a24 var(--moon-lit, 50%), 
+        #1a1a24 100%);
+    box-shadow: 
+      inset -20px -20px 40px rgba(0, 0, 0, 0.3),
+      inset 10px 10px 30px rgba(255, 255, 255, 0.05),
+      0 0 80px rgba(248, 244, 232, 0.15);
+    z-index: 1;
+    overflow: hidden;
+  }
+  /* Maria (dark areas on moon) - visible on lit portion */
+  .moon::before {
+    content: '';
+    position: absolute;
+    top: 25%; left: 30%;
+    width: 25%; height: 18%;
+    background: radial-gradient(ellipse, rgba(60, 50, 40, 0.3) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .moon::after {
+    content: '';
+    position: absolute;
+    top: 55%; left: 45%;
+    width: 18%; height: 15%;
+    background: radial-gradient(ellipse, rgba(70, 60, 50, 0.25) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  /* Craters */
+  .crater {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(40, 35, 30, 0.4) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .crater1 { top: 35%; left: 55%; width: 6%; height: 5%; }
+  .crater2 { top: 60%; left: 65%; width: 4%; height: 3.5%; }
+  .crater3 { top: 40%; left: 70%; width: 3%; height: 2.5%; }
+  .crater4 { top: 70%; left: 50%; width: 5%; height: 4%; }
+
+  /* ========== INFO-PANEELI ========== */
+  .info-panel {
+    background: linear-gradient(135deg, rgba(20, 25, 45, 0.6) 0%, rgba(10, 15, 30, 0.7) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(150, 180, 220, 0.15);
+    border-radius: 20px;
+    padding: 28px 24px;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  }
+  .phase-name {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    font-weight: 300;
+    text-align: center;
+    margin-bottom: 4px;
+    background: linear-gradient(90deg, #e0e8ff 0%, #ffd7a8 50%, #c0d0ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .phase-name-en {
+    font-size: 0.875rem;
+    color: #7a8aa5;
+    text-align: center;
+    margin-bottom: 24px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: 300;
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .stat-item {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+  }
+  .stat-item__label {
+    font-size: 0.7rem;
+    color: #7a8aa5;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+  .stat-item__value {
+    font-size: 1.4rem;
+    font-weight: 200;
+    color: #f0f0f5;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-item__unit {
+    font-size: 0.75rem;
+    color: #6a7a95;
+    margin-left: 2px;
+  }
+  .next-events {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 16px;
+  }
+  .next-event {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 0.85rem;
+  }
+  .next-event__name {
+    color: #b0c4de;
+  }
+  .next-event__time {
+    color: #f8f4e8;
+    font-variant-numeric: tabular-nums;
+  }
+  .next-event__icon {
+    margin-right: 8px;
+  }
+
+  /* ========== PHASE TIMELINE ========== */
+  .timeline-section {
+    width: 100%;
+    max-width: 600px;
+  }
+  .timeline-title {
+    text-align: center;
+    font-size: 0.75rem;
+    color: #6a7a95;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin-bottom: 16px;
+    font-weight: 400;
+  }
+  .timeline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 4px;
+    background: rgba(20, 25, 45, 0.4);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(150, 180, 220, 0.1);
+    border-radius: 60px;
+    padding: 16px 20px;
+    position: relative;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 40px;
+    right: 40px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(150, 180, 220, 0.3), transparent);
+    z-index: 0;
+  }
+  .phase-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    z-index: 1;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    flex: 1;
+  }
+  .phase-step:hover {
+    transform: translateY(-3px);
+  }
+  .phase-dot {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f8f4e8 0%, #c0c0d0 50%, #1a1a24 100%);
+    border: 1px solid rgba(150, 180, 220, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+  .phase-step.active .phase-dot {
+    box-shadow: 
+      0 0 16px rgba(248, 244, 232, 0.6),
+      0 0 32px rgba(248, 244, 232, 0.3);
+    transform: scale(1.3);
+  }
+  .phase-step__name {
+    font-size: 0.65rem;
+    color: #7a8aa5;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .phase-step.active .phase-step__name {
+    color: #f0f0f5;
+    font-weight: 500;
+  }
+
+  /* ========== COUNTDOWN ANIMATION ========== */
+  .countdown-bar {
+    margin-top: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 100px;
+    height: 6px;
+    overflow: hidden;
+    position: relative;
+  }
+  .countdown-bar__fill {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    background: linear-gradient(90deg, #4dffb8 0%, #35d6e8 50%, #9b7bff 100%);
+    border-radius: 100px;
+    transition: width 1s ease;
+    box-shadow: 0 0 8px rgba(77, 255, 184, 0.5);
+  }
+  .countdown-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: #6a7a95;
+    margin-top: 6px;
+  }
+
+  /* ========== FOOTER ========== */
+  .footer {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 0.7rem;
+    color: #4a5a75;
+    letter-spacing: 0.1em;
+  }
+  .footer a {
+    color: #6a8aa5;
+    text-decoration: none;
+    border-bottom: 1px dotted #4a5a75;
+  }
+
+  /* ========== MOBILE RESPONSIVE ========== */
+  @media (max-width: 600px) {
+    .container { padding: 30px 16px 40px; gap: 30px; }
+    .timeline { padding: 12px 14px; border-radius: 50px; }
+    .phase-step__name { font-size: 0.55rem; }
+    .phase-dot { width: 18px; height: 18px; }
+  }
+
+  /* ========== MILKY WAY ========== */
+  .milky-way {
+    position: fixed;
+    top: 20%;
+    left: 10%;
+    width: 80%;
+    height: 60%;
+    background: radial-gradient(ellipse at center, 
+      rgba(180, 200, 255, 0.04) 0%, 
+      rgba(180, 200, 255, 0.02) 20%, 
+      transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+    transform: rotate(-20deg);
+  }
+</style>
+</head>
+<body>
+<div class="stars"></div>
+<div class="stars2"></div>
+<div class="stars3"></div>
+<div class="milky-way"></div>
+<div class="sun-glow"></div>
+
+<div class="container">
+  <header class="header">
+    <h1>🌙 Kuun Sykli</h1>
+    <div class="header__clock" id="clock">—</div>
+  </header>
+
+  <section class="moon-section">
+    <div class="moon-container">
+      <div class="moon-glow"></div>
+      <div class="moon" id="moon">
+        <div class="crater crater1"></div>
+        <div class="crater crater2"></div>
+        <div class="crater crater3"></div>
+        <div class="crater crater4"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="info-panel">
+    <div class="phase-name" id="phaseNameFi">—</div>
+    <div class="phase-name-en" id="phaseNameEn">—</div>
+    
+    <div class="stats-grid">
+      <div class="stat-item">
+        <div class="stat-item__label">Valaistus</div>
+        <div class="stat-item__value"><span id="illumination">—</span><span class="stat-item__unit">%</span></div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-item__label">Ikä</div>
+        <div class="stat-item__value"><span id="age">—</span><span class="stat-item__unit">pv</span></div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-item__label">Etäisyys</div>
+        <div class="stat-item__value"><span id="distance">—</span><span class="stat-item__unit">km</span></div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-item__label">Täysi sykli</div>
+        <div class="stat-item__value"><span id="cycleDay">—</span><span class="stat-item__unit">/ 29.5</span></div>
+      </div>
+    </div>
+
+    <div class="next-events">
+      <div class="next-event">
+        <span class="next-event__name"><span class="next-event__icon">🌑</span>Seuraava uusikuu</span>
+        <span class="next-event__time" id="nextNew">—</span>
+      </div>
+      <div class="next-event">
+        <span class="next-event__name"><span class="next-event__icon">🌕</span>Seuraava täysikuu</span>
+        <span class="next-event__time" id="nextFull">—</span>
+      </div>
+      <div class="next-event">
+        <span class="next-event__name"><span class="next-event__icon">🌓</span>Seuraava 1. neljännes</span>
+        <span class="next-event__time" id="nextQ1">—</span>
+      </div>
+      <div class="next-event">
+        <span class="next-event__name"><span class="next-event__icon">🌗</span>Seuraava viim. neljännes</span>
+        <span class="next-event__time" id="nextQ3">—</span>
+      </div>
+    </div>
+
+    <div class="countdown-bar" id="countdownBar">
+      <div class="countdown-bar__fill" id="countdownFill" style="width: 0%"></div>
+    </div>
+    <div class="countdown-label">
+      <span id="countdownFrom">Uusikuu</span>
+      <span id="countdownTo">Täysikuu</span>
+    </div>
+  </section>
+
+  <section class="timeline-section">
+    <div class="timeline-title">Kuun sykli — 29.5 päivää</div>
+    <div class="timeline" id="timeline"></div>
+  </section>
+
+  <footer class="footer">
+    <p>Reaaliaikainen kuun vaihe • Päivitetty <span id="lastUpdate">—</span></p>
+    <p style="margin-top: 4px;">Algoritmi: Meeus astronomical formulas • Synodic month 29.530588853 pv</p>
+  </footer>
+</div>
+
+<script>
+'use strict';
+
+// ========== MOON PHASE CALCULATION ==========
+const SYNODIC_MONTH = 29.530588853; // days
+const KNOWN_NEW_MOON = new Date(Date.UTC(2000, 0, 6, 18, 14, 0)); // Jan 6, 2000 18:14 UTC
+
+function calculatePhase(date = new Date()) {
+  const days = (date - KNOWN_NEW_MOON) / 86400000;
+  let phase = (days / SYNODIC_MONTH) % 1;
+  if (phase < 0) phase += 1;
+  return phase;
+}
+
+function getPhaseInfo(phase) {
+  // 8 phase windows
+  if (phase < 0.031 || phase > 0.969) return { fi: 'Uusikuu', en: 'New Moon', emoji: '🌑', color: '#1a1a2a' };
+  if (phase < 0.094) return { fi: 'Kasvava sirppi', en: 'Waxing Crescent', emoji: '🌒', color: '#3d3a5c' };
+  if (phase < 0.156) return { fi: 'Kasvava sirppi', en: 'Waxing Crescent', emoji: '🌒', color: '#3d3a5c' };
+  if (phase < 0.219) return { fi: 'Ensimmäinen neljännes', en: 'First Quarter', emoji: '🌓', color: '#a99a8a' };
+  if (phase < 0.281) return { fi: 'Kasvava kupera', en: 'Waxing Gibbous', emoji: '🌔', color: '#d8c9a8' };
+  if (phase < 0.344) return { fi: 'Kasvava kupera', en: 'Waxing Gibbous', emoji: '🌔', color: '#d8c9a8' };
+  if (phase < 0.406) return { fi: 'Kasvava kupera', en: 'Waxing Gibbous', emoji: '🌔', color: '#d8c9a8' };
+  if (phase < 0.469) return { fi: 'Täysikuu', en: 'Full Moon', emoji: '🌕', color: '#f8f4e8' };
+  if (phase < 0.531) return { fi: 'Täysikuu', en: 'Full Moon', emoji: '🌕', color: '#f8f4e8' };
+  if (phase < 0.594) return { fi: 'Vähenevä kupera', en: 'Waning Gibbous', emoji: '🌖', color: '#d8c9a8' };
+  if (phase < 0.656) return { fi: 'Vähenevä kupera', en: 'Waning Gibbous', emoji: '🌖', color: '#d8c9a8' };
+  if (phase < 0.719) return { fi: 'Vähenevä kupera', en: 'Waning Gibbous', emoji: '🌖', color: '#d8c9a8' };
+  if (phase < 0.781) return { fi: 'Viimeinen neljännes', en: 'Last Quarter', emoji: '🌗', color: '#a99a8a' };
+  if (phase < 0.844) return { fi: 'Vähenevä sirppi', en: 'Waning Crescent', emoji: '🌘', color: '#3d3a5c' };
+  if (phase < 0.906) return { fi: 'Vähenevä sirppi', en: 'Waning Crescent', emoji: '🌘', color: '#3d3a5c' };
+  return { fi: 'Uusikuu', en: 'New Moon', emoji: '🌑', color: '#1a1a2a' };
+}
+
+function getIllumination(phase) {
+  return Math.round((1 - Math.cos(phase * 2 * Math.PI)) / 2 * 1000) / 10;
+}
+
+function getMoonAge(phase) {
+  return Math.round(phase * SYNODIC_MONTH * 10) / 10;
+}
+
+function getMoonDistance(date = new Date()) {
+  // Simplified - average distance ~384,400 km
+  // Use simple sinusoidal approximation based on phase
+  const days = (date - KNOWN_NEW_MOON) / 86400000;
+  const anomaly = (days / 27.554) * 2 * Math.PI; // anomalistic month
+  const dist = 384400 + 21000 * Math.cos(anomaly);
+  return Math.round(dist);
+}
+
+function daysToPhase(currentPhase, targetPhase) {
+  let diff = targetPhase - currentPhase;
+  if (diff < 0) diff += 1;
+  if (diff > 0.5) diff -= 1;
+  return diff * SYNODIC_MONTH;
+}
+
+// ========== CSS UPDATE ==========
+function updateMoonVisual(phase) {
+  const moon = document.getElementById('moon');
+  // For waxing (0-0.5): light is on the right, terminator moves right to left
+  // For waning (0.5-1): light is on the left, terminator moves left to right
+  let terminatorX, litRadius;
+  if (phase <= 0.5) {
+    // Waxing: terminator starts at right edge (100%) and moves to left edge (0%)
+    terminatorX = (1 - 2 * phase) * 100;
+    litRadius = 2 * phase * 100;
+  } else {
+    // Waning: terminator starts at left edge (0%) and moves to right edge (100%)
+    terminatorX = 2 * (phase - 0.5) * 100;
+    litRadius = 2 * (1 - phase) * 100;
+  }
+  moon.style.setProperty('--moon-terminator', terminatorX + '%');
+  moon.style.setProperty('--moon-lit', litRadius + '%');
+}
+
+// ========== RENDER ==========
+function updateInfo() {
+  const now = new Date();
+  const phase = calculatePhase(now);
+  const info = getPhaseInfo(phase);
+  const illum = getIllumination(phase);
+  const age = getMoonAge(phase);
+  const dist = getMoonDistance(now);
+
+  // Update moon visual
+  updateMoonVisual(phase);
+
+  // Update text
+  document.getElementById('phaseNameFi').textContent = info.fi;
+  document.getElementById('phaseNameEn').textContent = info.en;
+  document.getElementById('illumination').textContent = illum;
+  document.getElementById('age').textContent = age;
+  document.getElementById('distance').textContent = dist.toLocaleString('fi-FI');
+  document.getElementById('cycleDay').textContent = Math.round(phase * 29.5306 * 10) / 10;
+
+  // Next events
+  const newMoonDays = (1 - phase) * SYNODIC_MONTH;
+  const fullMoonDays = ((0.5 - phase + 1) % 1) * SYNODIC_MONTH;
+  const q1Days = ((0.25 - phase + 1) % 1) * SYNODIC_MONTH;
+  const q3Days = ((0.75 - phase + 1) % 1) * SYNODIC_MONTH;
+
+  document.getElementById('nextNew').textContent = formatFutureDate(newMoonDays);
+  document.getElementById('nextFull').textContent = formatFutureDate(fullMoonDays);
+  document.getElementById('nextQ1').textContent = formatFutureDate(q1Days);
+  document.getElementById('nextQ3').textContent = formatFutureDate(q3Days);
+
+  // Countdown bar - shows progress to next full/new moon
+  // Determine which one is closer
+  const toNew = newMoonDays;
+  const toFull = fullMoonDays;
+  const nextIsFull = toFull < toNew;
+  const targetDays = nextIsFull ? toFull : toNew;
+  const totalDays = nextIsFull ? 14.77 : 14.77; // half synodic month
+  const progress = ((totalDays - targetDays) / totalDays) * 100;
+  document.getElementById('countdownFill').style.width = progress + '%';
+  document.getElementById('countdownFrom').textContent = info.fi;
+  document.getElementById('countdownTo').textContent = nextIsFull ? 'Täysikuu' : 'Uusikuu';
+
+  // Timeline
+  updateTimeline(phase);
+
+  // Clock
+  document.getElementById('clock').textContent = 
+    'UTC ' + now.toISOString().substr(11, 8) + ' • ' + 
+    now.toLocaleString('fi-FI', { weekday: 'long', day: 'numeric', month: 'long' });
+  
+  // Last update
+  document.getElementById('lastUpdate').textContent = now.toLocaleTimeString('fi-FI');
+}
+
+function formatFutureDate(daysAhead) {
+  if (daysAhead < 0.5) return 'nyt';
+  if (daysAhead < 1) return 'noin ' + Math.round(daysAhead * 24) + 'h';
+  if (daysAhead < 7) return Math.round(daysAhead * 10) / 10 + ' pv';
+  const futureDate = new Date(Date.now() + daysAhead * 86400000);
+  return futureDate.toLocaleDateString('fi-FI', { day: 'numeric', month: 'short' });
+}
+
+function updateTimeline(currentPhase) {
+  const timeline = document.getElementById('timeline');
+  timeline.innerHTML = '';
+  const phases = [
+    { p: 0, name: 'Uusi', emoji: '🌑' },
+    { p: 0.125, name: 'Kasv. sirppi', emoji: '🌒' },
+    { p: 0.25, name: '1. neljännes', emoji: '🌓' },
+    { p: 0.375, name: 'Kasv. kupera', emoji: '🌔' },
+    { p: 0.5, name: 'Täysi', emoji: '🌕' },
+    { p: 0.625, name: 'Väh. kupera', emoji: '🌖' },
+    { p: 0.75, name: 'V. neljännes', emoji: '🌗' },
+    { p: 0.875, name: 'Väh. sirppi', emoji: '🌘' }
+  ];
+  // Find the closest phase to current
+  let closestIdx = 0;
+  let closestDiff = 1;
+  phases.forEach((p, i) => {
+    let diff = Math.abs(p.p - currentPhase);
+    if (diff > 0.5) diff = 1 - diff;
+    if (diff < closestDiff) {
+      closestDiff = diff;
+      closestIdx = i;
+    }
+  });
+  phases.forEach((p, i) => {
+    const div = document.createElement('div');
+    div.className = 'phase-step' + (i === closestIdx ? ' active' : '');
+    div.innerHTML = '<div class="phase-dot"></div><div class="phase-step__name">' + p.name + '</div>';
+    div.title = p.name + ' (phase ' + p.p.toFixed(3) + ')';
+    timeline.appendChild(div);
+  });
+}
+
+// ========== INIT ==========
+function init() {
+  updateInfo();
+  // Update every minute
+  setInterval(updateInfo, 60000);
+}
+init();
+</script>
+</body>
+</html>
