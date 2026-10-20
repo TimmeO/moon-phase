@@ -680,11 +680,18 @@ function updateInfo() {
 }
 
 function formatFutureDate(daysAhead) {
-  if (daysAhead < 0.5) return 'nyt';
-  if (daysAhead < 1) return 'noin ' + Math.round(daysAhead * 24) + 'h';
-  if (daysAhead < 7) return Math.round(daysAhead * 10) / 10 + ' pv';
+  // Laske tuleva päivämäärä
   const futureDate = new Date(Date.now() + daysAhead * 86400000);
-  return futureDate.toLocaleDateString('fi-FI', { day: 'numeric', month: 'short' });
+  // Muotoile päivämäärä suomalaisittain
+  const day = futureDate.getDate();
+  const month = futureDate.getMonth() + 1;
+  const dateStr = day + '.' + month + '.';
+  // Lisää konteksti: kuinka pian
+  if (daysAhead < 0.04) return dateStr + ' (nyt)';
+  if (daysAhead < 1) return dateStr + ' (tänään)';
+  if (daysAhead < 2) return dateStr + ' (huomenna)';
+  if (daysAhead < 14) return dateStr + ' (' + Math.round(daysAhead) + ' pv)';
+  return dateStr;
 }
 
 function updateTimeline(currentPhase) {
